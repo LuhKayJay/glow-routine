@@ -1,14 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Glow Routine" />
-    <title>Glow Routine</title>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Glow Routine"/>
+<title>Glow Routine</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#0a0a0a,#1a0a1a);min-height:100vh;font-family:Georgia,serif;color:#f0e8e0}
+.header{padding:32px 20px 20px;text-align:center;border-bottom:1px solid rgba(180,120,200,0.2)}
+.subtitle{font-size:11px;letter-spacing:4px;color:#b478c8;text-transform:uppercase;margin-bottom:8px}
+h1{font-size:28px;font-weight:400;background:linear-gradient(135deg,#f0e8e0,#b478c8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.date{font-size:13px;color:rgba(240,232,224,0.5)}
+.stats{padding:20px;display:flex;gap:12px}
+.streak-box{flex:1;background:rgba(180,120,200,0.08);border:1px solid rgba(180,120,200,0.2);border-radius:16px;padding:16px;text-align:center}
+.streak-num{font-size:24px;font-weight:700;color:#b478c8}
+.streak-label{font-size:11px;color:rgba(240,232,224,0.5);letter-spacing:2px;text-transform:uppercase}
+.progress-box{flex:2;background:rgba(180,120,200,0.08);border:1px solid rgba(180,120,200,0.2);border-radius:16px;padding:16px}
+.progress-top{display:flex;justify-content:space-between;margin-bottom:10px}
+.progress-pct{font-size:18px;font-weight:700;color:#b478c8}
+.progress-bar{background:rgba(255,255,255,0.08);border-radius:99px;height:8px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#7a3a9a,#b478c8);border-radius:99px;transition:width 0.5s ease}
+.progress-count{font-size:12px;color:rgba(240,232,224,0.4);margin-top:8px}
+.days{padding:0 20px;display:flex;justify-content:space-between}
+.day{text-align:center;flex:1}
+.day-circle{width:32px;height:32px;border-radius:50%;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:10px;border:1px solid rgba(180,120,200,0.2);color:rgba(240,232,224,0.4)}
+.day-circle.today{background:linear-gradient(135deg,#7a3a9a,#b478c8);border:none;color:white;font-weight:700}
+.day-label{font-size:9px;color:rgba(240,232,224,0.3);letter-spacing:1px}
+.day-label.today{color:#b478c8}
+.tabs{padding:20px 20px 0;display:flex;gap:8px}
+.tab{flex:1;padding:12px;border-radius:12px;border:1px solid rgba(180,120,200,0.2);background:rgba(180,120,200,0.05);color:rgba(240,232,224,0.5);font-size:13px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:Georgia,serif}
+.tab.active{background:linear-gradient(135deg,#7a3a9a,#b478c8);border:none;color:white}
+.steps{padding:16px 20px 100px}
+.night-label{font-size:11px;letter-spacing:2px;color:#b478c8;text-transform:uppercase;margin-bottom:12px;text-align:center}
+.step{display:flex;align-items:center;gap:14px;padding:16px;margin-bottom:10px;border-radius:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);cursor:pointer;transition:all 0.2s ease}
+.step.done{background:rgba(180,120,200,0.12);border:1px solid rgba(180,120,200,0.4)}
+.step-num{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(180,120,200,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(240,232,224,0.3);flex-shrink:0}
+.step-num.done{background:linear-gradient(135deg,#7a3a9a,#b478c8);border:none;color:white;font-size:14px}
+.step-name{font-size:14px;font-weight:500;color:rgba(240,232,224,0.7);margin-bottom:2px}
+.step-name.done{color:#f0e8e0}
+.step-brand{font-size:11px;color:rgba(240,232,224,0.3);letter-spacing:1px;text-transform:uppercase}
+.step-brand.done{color:#b478c8}
+.complete{text-align:center;padding:24px;background:rgba(180,120,200,0.08);border-radius:16px;border:1px solid rgba(180,120,200,0.3);margin-top:8px;display:none}
+.complete.show{display:block}
+.footer{position:fixed;bottom:0;left:0;right:0;padding:12px 20px;background:rgba(10,10,10,0.95);border-top:1px solid rgba(180,120,200,0.15);text-align:center;font-size:11px;color:rgba(240,232,224,0.3);letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="subtitle">Your Skin Journey</div>
+  <h1>Glow Routine</h1>
+  <div class="date" id="dateLabel"></div>
+</div>
+<div class="stats">
+  <div class="streak-box">
+    <div style="font-size:32px">🔥</div>
+    <div class="streak-num" id="streakNum">0</div>
+    <div class="streak-label">Day Streak</div>
+  </div>
+  <div class="progress-box">
+    <div class="progress-top">
+      <div style="font-size:11px;letter-spacing:2px;color:rgba(240,232,224,0.5);text-transform:uppercase">Today</div>
+      <div class="progress-pct" id="progressPct">0%</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-count" id="progressCount">0 of 0 steps done</div>
+  </div>
+</div>
+<div class="days" id="daysRow"></div>
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('morning')">☀️ Morning</button>
+  <button class="tab" onclick="switchTab('night')">🌙 Night</button>
+</div>
+<div class="steps" id="stepsContainer"></div>
+<div class="footer">💜 Give your routine 6–8 weeks to work its magic</div>
+<script>
+const ROUTINE={morning:[{id:"cleanser",name:"Glucoside Foaming Cleanser",brand:"The Ordinary"},{id:"serum",name:"Glow Serum Propolis + Niacinamide",brand:"Beauty of Joseon"},{id:"moisturizer",name:"Hydro Boost Water Gel",brand:"Neutrogena"},{id:"spf",name:"Kids SPF 30",brand:"Black Girl Sunscreen"}],monday:[{id:"cleanser",name:"Glucoside Foaming Cleanser",brand:"The Ordinary"},{id:"serum",name:"Glow Serum Propolis + Niacinamide",brand:"Beauty of Joseon"},{id:"salicylic",name:"Salicylic Acid 2% Solution",brand:"The Ordinary"},{id:"nmf",name:"Natural Moisturizing Factors",brand:"The Ordinary"},{id:"pair",name:"Acne Cream W (spot treat)",brand:"PAIR"}],tuesday:[{id:"cleanser",name:"Glucoside Foaming Cleanser",brand:"The Ordinary"},{id:"serum",name:"Glow Serum Propolis + Niacinamide",brand:"Beauty of Joseon"},{id:"retinol",name:"Retinol Serum",brand:"AOA"},{id:"nmf",name:"Natural Moisturizing Factors",brand:"The Ordinary"},{id:"pair",name:"Acne Cream W (spot treat)",brand:"PAIR"}],wednesday:[{id:"cleanser",name:"Glucoside Foaming Cleanser",brand:"The Ordinary"},{id:"serum",name:"Glow Serum Propolis + Niacinamide",brand:"Beauty of Joseon"},{id:"salicylic",name:"Salicylic Acid 2% Solution",brand:"The Ordinary"},{id:"nmf",name:"Natural Moisturizing Factors",brand:"The Ordinary"},{id:"pair",name:"Acne Cream W (spot treat)",brand:"PAIR"}],thursday:[{id:"cleanser",name:"Glucoside Foaming Cleanser",brand:"The Ordinary"},{id:"serum",name:"Glow Serum Propolis + Niacinamide",brand:"Beauty of Joseon"},{id:"retinol",name:"Retinol Serum",brand:"AOA"},{id:"nmf",name:"Natural Moisturizing Factors",brand:"The Ordinary"},{id:"pair",name:"Acne Cream W (spot treat)",brand:"PAIR"}],friday:[{id:"cleanser",name:"Glucoside Foaming Cleanser",brand:"The Ordinary"},{id:"serum",name:"Glow Serum Propolis + Niacinamide",brand:"Beauty of Joseon"},{id:"salicylic",name:"Salicylic Acid 2% Solution",brand:"The Ordinary"},{id:"nmf",name:"Natural Moisturizing Factors",brand:"The Ordinary"},{id:"pair",name:"Acne Cream W (spot treat)",brand:"PAIR"}],saturday:[{id:"cleanser",name:"Glucoside Foaming Cleanser",brand:"The Ordinary"},{id:"mugwort",name:"Mugwort Acne Clay Stick (T-zone only)",brand:"SKINTIFIC"},{id:"nmf",name:"Natural Moisturizing Factors",brand:"The Ordinary"},{id:"pair",name:"Acne Cream W (spot treat)",brand:"PAIR"}],sunday:[{id:"cleanser",name:"Glucoside Foaming Cleanser",brand:"The Ordinary"},{id:"serum",name:"Glow Serum Propolis + Niacinamide",brand:"Beauty of Joseon"},{id:"retinol",name:"Retinol Serum",brand:"AOA"},{id:"nmf",name:"Natural Moisturizing Factors",brand:"The Ordinary"},{id:"pair",name:"Acne Cream W (spot treat)",brand:"PAIR"}]};
+const DAYS=["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+const DAY_LABELS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const today=new Date();
+const todayIdx=today.getDay();
+const todayKey=DAYS[todayIdx];
+const todayStr=today.toISOString().split("T")[0];
+const storageKey=`skincare_${todayStr}`;
+let checked=JSON.parse(localStorage.getItem(storageKey)||"{}");
+let activeTab="morning";
+
+document.getElementById("dateLabel").textContent=today.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+
+// Days row
+const daysRow=document.getElementById("daysRow");
+DAY_LABELS.forEach((label,i)=>{
+  daysRow.innerHTML+=`<div class="day"><div class="day-circle${i===todayIdx?" today":""}">${label.charAt(0)}</div><div class="day-label${i===todayIdx?" today":""}">${label}</div></div>`;
+});
+
+// Streak
+let streak=0;
+for(let i=1;i<=7;i++){
+  const d=new Date(today);d.setDate(d.getDate()-i);
+  const k=`skincare_${d.toISOString().split("T")[0]}`;
+  const data=localStorage.getItem(k);
+  if(data&&Object.values(JSON.parse(data)).filter(Boolean).length>0)streak++;
+  else break;
+}
+document.getElementById("streakNum").textContent=streak;
+
+function updateProgress(){
+  const ms=ROUTINE.morning;const ns=ROUTINE[todayKey]||[];
+  const total=ms.length+ns.length;
+  const done=ms.filter(s=>checked[`morning_${s.id}`]).length+ns.filter(s=>checked[`night_${s.id}`]).length;
+  const pct=total>0?Math.round((done/total)*100):0;
+  document.getElementById("progressPct").textContent=pct+"%";
+  document.getElementById("progressFill").style.width=pct+"%";
+  document.getElementById("progressCount").textContent=`${done} of ${total} steps done`;
+}
+
+function renderSteps(){
+  const steps=activeTab==="morning"?ROUTINE.morning:(ROUTINE[todayKey]||[]);
+  const prefix=activeTab==="morning"?"morning_":"night_";
+  let html="";
+  if(activeTab==="night")html+=`<div class="night-label">${todayKey.charAt(0).toUpperCase()+todayKey.slice(1)} Night Routine</div>`;
+  if(steps.length===0){html+='<div style="text-align:center;padding:40px 20px;color:rgba(240,232,224,0.3);font-size:14px">No night routine tonight 🌙<br><span style="font-size:12px">Rest your skin!</span></div>';}
+  steps.forEach((step,i)=>{
+    const key=prefix+step.id;
+    const done=!!checked[key];
+    html+=`<div class="step${done?" done":""}" onclick="toggle('${key}')">
+      <div class="step-num${done?" done":""}">${done?"✓":i+1}</div>
+      <div style="flex:1">
+        <div class="step-name${done?" done":""}">${step.name}</div>
+        <div class="step-brand${done?" done":""}">${step.brand}</div>
+      </div>
+    </div>`;
+  });
+  const allDone=steps.length>0&&steps.every(s=>checked[prefix+s.id]);
+  html+=`<div class="complete${allDone?" show":""}"><div style="font-size:32px;margin-bottom:8px">✨</div><div style="font-size:16px;color:#b478c8;margin-bottom:4px">${activeTab==="morning"?"Morning routine done!":"Night routine done!"}</div><div style="font-size:12px;color:rgba(240,232,224,0.4)">Your skin thanks you 🌿</div></div>`;
+  document.getElementById("stepsContainer").innerHTML=html;
+}
+
+function toggle(key){
+  checked[key]=!checked[key];
+  localStorage.setItem(storageKey,JSON.stringify(checked));
+  updateProgress();renderSteps();
+}
+
+function switchTab(tab){
+  activeTab=tab;
+  document.querySelectorAll(".tab").forEach((t,i)=>t.classList.toggle("active",i===(tab==="morning"?0:1)));
+  renderSteps();
+}
+
+updateProgress();renderSteps();
+</script>
+</body>
 </html>
+
